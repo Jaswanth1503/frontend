@@ -10,10 +10,13 @@ import {
 } from "../lib/pricingConfig";
 import { calculatePrice, formatPrice } from "../lib/pricingEngine";
 import Image from "next/image";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 
 export default function Pricing() {
   const [currency, setCurrency] = useState<Currency>("USD");
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("Monthly");
+  
+  const { ref: sectionRef, isVisible } = useScrollReveal(0.1);
 
   // Localized memoization for derived pricing display data
   const pricingData = useMemo(() => {
@@ -32,12 +35,12 @@ export default function Pricing() {
   }, [currency, billingCycle]);
 
   return (
-    <section id="pricing" className="py-24 bg-[var(--color-nocturnal)] relative overflow-hidden">
+    <section id="pricing" ref={sectionRef} className="py-24 bg-[var(--color-nocturnal)] relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[800px] h-[800px] bg-[var(--color-oceanic)] rounded-full blur-[120px] opacity-80 pointer-events-none -z-10" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-10 relative">
-        <div className="text-center max-w-3xl mx-auto animate-fade-in mb-16">
+        <div className={`text-center max-w-3xl mx-auto mb-16 reveal ${isVisible ? "reveal-visible" : ""}`}>
           <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-[var(--color-arctic)]">
             Simple, transparent <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-saffron)] to-[var(--color-forsythia)]">pricing</span>
           </h2>
@@ -47,7 +50,7 @@ export default function Pricing() {
         </div>
 
         {/* Toggles */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-12">
+        <div className={`flex flex-col md:flex-row items-center justify-center gap-6 mb-12 reveal delay-100 ${isVisible ? "reveal-visible" : ""}`}>
           {/* Billing Cycle Toggle */}
           <div className="flex items-center p-1 bg-[var(--color-oceanic)] rounded-xl border border-[var(--color-mint)]/20 shadow-inner">
             <button
@@ -91,28 +94,28 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto perspective-1000">
           {pricingData.map((plan, idx) => (
             <div 
               key={plan.id}
-              className={`relative flex flex-col p-8 rounded-3xl transition-all duration-[350ms] animate-elevate ${
+              className={`relative flex flex-col p-8 rounded-3xl transition-all duration-[500ms] reveal ${isVisible ? "reveal-visible" : ""} ${idx === 0 ? "delay-200" : idx === 1 ? "delay-300" : "delay-400"} ${
                 plan.popular 
-                  ? "bg-gradient-to-b from-[var(--color-oceanic)] to-[var(--color-nocturnal)] border-2 border-[var(--color-saffron)] shadow-[0_0_30px_rgba(255,153,50,0.15)] md:-translate-y-4" 
-                  : "bg-[var(--color-oceanic)] border border-[var(--color-mint)]/10 hover:border-[var(--color-mint)]/30"
+                  ? "bg-gradient-to-b from-[var(--color-oceanic)] to-[var(--color-nocturnal)] border-2 border-[var(--color-saffron)] shadow-[0_0_40px_rgba(255,153,50,0.15)] md:-translate-y-4 hover:shadow-[0_0_60px_rgba(255,153,50,0.25)]" 
+                  : "bg-[var(--color-oceanic)] border border-[var(--color-mint)]/10 hover:border-[var(--color-mint)]/30 hover:-translate-y-2 hover:shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
               }`}
             >
               {plan.popular && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[var(--color-saffron)] to-[var(--color-forsythia)] text-[var(--color-oceanic)] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[var(--color-saffron)] to-[var(--color-forsythia)] text-[var(--color-oceanic)] px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(255,153,50,0.5)]">
                   Most Popular
                 </div>
               )}
               
-              <div className="mb-8">
+              <div className="mb-8 relative z-10">
                 <h3 className="text-2xl font-bold text-[var(--color-arctic)] mb-2">{plan.name}</h3>
                 <p className="text-[var(--color-mint)]/80 text-sm h-10">{plan.description}</p>
               </div>
 
-              <div className="mb-8 flex items-baseline gap-1">
+              <div className="mb-8 flex items-baseline gap-1 relative z-10">
                 <span className="font-mono text-5xl font-bold text-[var(--color-arctic)] tracking-tighter">
                   {plan.displayPrice}
                 </span>
@@ -122,7 +125,7 @@ export default function Pricing() {
               </div>
 
               {billingCycle === "Annual" && plan.priceValue > 0 && (
-                <div className="text-sm text-[var(--color-saffron)] font-medium mb-8">
+                <div className="text-sm text-[var(--color-saffron)] font-medium mb-8 relative z-10">
                   Billed {formatPrice(plan.priceValue * 12, currency)} yearly
                 </div>
               )}
@@ -130,10 +133,10 @@ export default function Pricing() {
                 <div className="mb-8 h-5" /> // Spacer
               )}
 
-              <ul className="flex flex-col gap-4 mb-8 flex-grow">
+              <ul className="flex flex-col gap-4 mb-8 flex-grow relative z-10">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-1">
+                  <li key={i} className="flex items-start gap-3 group">
+                    <div className="flex-shrink-0 mt-1 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
                       <Image src="/svg/arrow-trending-up.svg" alt="Check" width={16} height={16} className="filter invert opacity-80" />
                     </div>
                     <span className="text-[var(--color-mint)] text-sm">{feature}</span>
@@ -142,13 +145,19 @@ export default function Pricing() {
               </ul>
 
               <button 
-                className={`w-full py-4 rounded-xl font-bold text-center transition-all duration-[180ms] ${
+                className={`w-full py-4 rounded-xl font-bold text-center transition-all duration-[180ms] relative overflow-hidden group ${
                   plan.popular 
-                    ? "bg-[var(--color-saffron)] text-[var(--color-oceanic)] hover:bg-[var(--color-forsythia)] hover:shadow-lg hover:-translate-y-1" 
-                    : "bg-[var(--color-nocturnal)] text-[var(--color-arctic)] border border-[var(--color-mint)]/20 hover:bg-[var(--color-nocturnal)]/80 hover:border-[var(--color-mint)]/40"
+                    ? "bg-[var(--color-saffron)] text-[var(--color-oceanic)] hover:bg-[var(--color-forsythia)] hover:shadow-[0_0_20px_rgba(255,153,50,0.4)] hover:-translate-y-1" 
+                    : "bg-[var(--color-nocturnal)] text-[var(--color-arctic)] border border-[var(--color-mint)]/20 hover:bg-[var(--color-nocturnal)]/80 hover:border-[var(--color-mint)]/50"
                 }`}
               >
-                {plan.ctaText}
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {plan.ctaText}
+                  <Image src="/svg/chevron-right.svg" alt="arrow" width={16} height={16} className={`transition-transform duration-300 ${plan.popular ? "filter invert-0" : "filter invert"} opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 hidden md:inline-block`} />
+                </span>
+                {plan.popular && (
+                   <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[600ms] ease-in-out" />
+                )}
               </button>
             </div>
           ))}
